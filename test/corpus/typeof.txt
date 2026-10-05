@@ -1,0 +1,94 @@
+========================================
+Typeof specifiers
+========================================
+
+typeof(int) a;
+typeof(x) v;
+typeof(x) *p;
+typeof(int) w;
+typeof(x) initialized = (typeof(x))malloc(sizeof(*initialized));
+typeof(int *) p2;
+typeof(foo()) result;
+typeof(*(ptr)) y;
+typeof_unqual(int) c;
+__typeof(int) d;
+__typeof__(int) e;
+typeof(1 + 2) b;
+
+---
+
+(translation_unit
+  (declaration
+    (typeof_specifier
+      (type_descriptor
+        (primitive_type)))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (identifier))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (identifier))
+    (pointer_declarator
+      (identifier)))
+  (declaration
+    (typeof_specifier
+      (type_descriptor
+        (primitive_type)))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (identifier))
+    (init_declarator
+      (identifier)
+      (cast_expression
+        (type_descriptor
+          (typeof_specifier
+            (identifier)))
+        (call_expression
+          (identifier)
+          (argument_list
+            (sizeof_expression
+              (parenthesized_expression
+                (pointer_expression
+                  (identifier)))))))))
+  (declaration
+    (typeof_specifier
+      (type_descriptor
+        (primitive_type)
+        (abstract_pointer_declarator)))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (call_expression
+        (identifier)
+        (argument_list)))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (pointer_expression
+        (parenthesized_expression
+          (identifier))))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (type_descriptor
+        (primitive_type)))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (type_descriptor
+        (primitive_type)))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (type_descriptor
+        (primitive_type)))
+    (identifier))
+  (declaration
+    (typeof_specifier
+      (binary_expression
+        (number_literal)
+        (number_literal)))
+    (identifier)))

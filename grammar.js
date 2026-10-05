@@ -591,10 +591,18 @@ module.exports = grammar({
       $.struct_specifier,
       $.union_specifier,
       $.enum_specifier,
+      $.typeof_specifier,
       $.macro_type_specifier,
       $.sized_type_specifier,
       $.primitive_type,
       $._type_identifier,
+    ),
+
+    typeof_specifier: $ => seq(
+      choice('typeof', 'typeof_unqual', '__typeof', '__typeof__'),
+      '(',
+      choice($.expression, $.type_descriptor),
+      ')',
     ),
 
     sized_type_specifier: $ => choice(
