@@ -53,6 +53,8 @@ module.exports = grammar({
     [$._top_level_item, $._top_level_statement],
     [$.type_specifier, $._top_level_expression_statement],
     [$.type_qualifier, $.extension_expression],
+    [$._declaration_modifiers, $.labeled_statement],
+    [$._declarator, $._non_function_declarator],
   ],
 
   extras: $ => [
@@ -270,6 +272,7 @@ module.exports = grammar({
       optional('__extension__'),
       'typedef',
       $._type_definition_type,
+      repeat($.attribute_specifier),
       $._type_definition_declarators,
       repeat($.attribute_specifier),
       ';',
@@ -373,8 +376,13 @@ module.exports = grammar({
 
     _declaration_declarator: $ => choice(
       $.attributed_declarator,
-      $.pointer_declarator,
+      seq($._non_function_declarator, repeat1($.attribute_specifier)),
+      $._non_function_declarator,
       alias($._function_declaration_declarator, $.function_declarator),
+    ),
+
+    _non_function_declarator: $ => choice(
+      $.pointer_declarator,
       $.array_declarator,
       $.parenthesized_declarator,
       $.identifier,
@@ -543,6 +551,7 @@ module.exports = grammar({
 
     init_declarator: $ => seq(
       field('declarator', $._declarator),
+      repeat($.attribute_specifier),
       '=',
       field('value', choice($.initializer_list, $.expression)),
     ),
@@ -671,9 +680,13 @@ module.exports = grammar({
         seq(
           field('name', $._type_identifier),
           optional(seq(':', field('underlying_type', $.primitive_type))),
+          optional($.attribute_specifier),
           field('body', optional($.enumerator_list)),
         ),
-        field('body', $.enumerator_list),
+        seq(
+          optional($.attribute_specifier),
+          field('body', $.enumerator_list),
+        ),
       ),
       optional($.attribute_specifier),
     ),
@@ -832,6 +845,7 @@ module.exports = grammar({
     labeled_statement: $ => seq(
       field('label', $._statement_identifier),
       ':',
+      repeat($.attribute_specifier),
       choice($.declaration, $.statement),
     ),
 
@@ -866,7 +880,11 @@ module.exports = grammar({
 
     case_statement: $ => prec.right(seq(
       choice(
-        seq('case', field('value', $.expression)),
+        seq(
+          'case',
+          field('value', $.expression),
+          optional(seq('...', field('value', $.expression))),
+        ),
         'default',
       ),
       ':',
@@ -924,7 +942,10 @@ module.exports = grammar({
 
     goto_statement: $ => seq(
       'goto',
-      field('label', $._statement_identifier),
+      choice(
+        field('label', $._statement_identifier),
+        seq('*', field('target', $.expression)),
+      ),
       ';',
     ),
 
@@ -1034,9 +1055,12 @@ module.exports = grammar({
       field('argument', $.expression),
     )),
 
-    unary_expression: $ => prec.left(PREC.UNARY, seq(
-      field('operator', choice('!', '~', '-', '+')),
-      field('argument', $.expression),
+    unary_expression: $ => prec.left(PREC.UNARY, choice(
+      seq(
+        field('operator', choice('!', '~', '-', '+')),
+        field('argument', $.expression),
+      ),
+      seq('&&', $._statement_identifier),
     )),
 
     binary_expression: $ => {
